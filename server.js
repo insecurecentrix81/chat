@@ -10,7 +10,7 @@ const crypto = require("crypto");
 // Environment variables
 const MONGO_URI = process.env.MONGO_URI;
 const SALT = process.env.SALT || crypto.randomBytes(32).toString("hex");
-const SALT_ROUNDS = 24;
+const SALT_ROUNDS = 14;
 
 // Encryption helpers using AES-256-GCM
 const ENCRYPTION_KEY = crypto.scryptSync(SALT, "secure-chat-salt", 32);
