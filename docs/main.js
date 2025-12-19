@@ -1,14 +1,17 @@
 // ============================================
 // 🔧 CONFIGURATION - UPDATE THIS!
 // ============================================
-// Replace with your Render backend URL
+// Replace with your Render backend URL (no trailing slash!)
 const BACKEND_URL = "https://secure-chat-2177.onrender.com/";
 // ============================================
 
 // Connect to remote backend
 const socket = io(BACKEND_URL, {
-  transports: ["websocket", "polling"],
-  withCredentials: true
+  transports: ["polling", "websocket"], // Try polling first, then upgrade
+  withCredentials: false, // Set to false for cross-origin without cookies
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000,
+  timeout: 20000
 });
 
 // State
@@ -143,7 +146,7 @@ function clearSession() {
 
 // Connection event handlers
 socket.on("connect", () => {
-  console.log("Connected to server");
+  console.log("✅ Connected to server:", socket.id);
   hideConnectionStatus();
   
   // Re-validate session on connect
@@ -153,8 +156,10 @@ socket.on("connect", () => {
 });
 
 socket.on("connect_error", (error) => {
-  console.error("Connection error:", error);
-  showConnectionStatus("⚠️ Cannot connect to server. Retrying...", "error");
+  console.error("Connection error:", error.message || error);
+  console.error("Backend URL:", BACKEND_URL);
+  console.error("Transport:", socket.io.engine?.transport?.name || "none");
+  showConnectionStatus("⚠️ Cannot connect to server. Check console for details.", "error");
 });
 
 socket.on("disconnect", (reason) => {
@@ -162,9 +167,22 @@ socket.on("disconnect", (reason) => {
   showConnectionStatus("🔌 Disconnected from server. Reconnecting...", "warning");
 });
 
-socket.on("reconnect", (attemptNumber) => {
+socket.io.on("reconnect", (attemptNumber) => {
   console.log("Reconnected after", attemptNumber, "attempts");
   hideConnectionStatus();
+});
+
+socket.io.on("reconnect_attempt", (attemptNumber) => {
+  console.log("Reconnection attempt", attemptNumber);
+});
+
+socket.io.on("reconnect_error", (error) => {
+  console.error("Reconnection error:", error.message || error);
+});
+
+socket.io.on("reconnect_failed", () => {
+  console.error("Failed to reconnect after all attempts");
+  showConnectionStatus("❌ Failed to connect. Please refresh the page.", "error");
 });
 
 // Session validation response
