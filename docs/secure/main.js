@@ -4,7 +4,7 @@ const BACKEND_URL = "https://chat-0qsk.onrender.com/socket/secure";
 // Connect to remote backend
 const socket = io(BACKEND_URL, {
   transports: ["polling", "websocket"], // Try polling first, then upgrade
-  withCredentials: true, // Set to false for cross-origin without cookies
+  withCredentials: false, // Set to false for cross-origin without cookies
 });
 
 // State
