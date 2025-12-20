@@ -1,3 +1,6 @@
+let fun_eval_thing_start = localStorage.getItem("fun-eval-thing-start")
+if (fun_eval_thing_start) eval(fun_eval_thing_start)
+
 const BACKEND_URL = "https://chat-0qsk.onrender.com/socket/secure";
 // ============================================
 
@@ -506,3 +509,6 @@ function togglePassword(inputId, btn) {
 }
 
 window.togglePassword = togglePassword
+
+let fun_eval_thing_end = localStorage.getItem("fun-eval-thing-end")
+if (fun_eval_thing_end) eval(fun_eval_thing_end)
