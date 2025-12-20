@@ -10,6 +10,52 @@ const socket = io(BACKEND_URL, {
   withCredentials: false,
 });
 
+// Loading screen elements
+const loadingScreen = document.getElementById("loading-screen")
+const loadingStatus = document.getElementById("loading-status")
+const loadingProgressBar = document.getElementById("loading-progress-bar")
+
+// Simulate progress while connecting
+let progress = 0
+const progressInterval = setInterval(() => {
+  if (progress < 90) {
+    progress += Math.random() * 15
+    loadingProgressBar.style.width = Math.min(progress, 90) + "%"
+  }
+}, 500)
+
+// Update status messages
+const statusMessages = [
+  "Connecting to server...",
+  "Waking up server...",
+  "Almost there...",
+  "Establishing secure connection..."
+]
+let statusIndex = 0
+const statusInterval = setInterval(() => {
+  statusIndex = (statusIndex + 1) % statusMessages.length
+  loadingStatus.textContent = statusMessages[statusIndex]
+}, 3000)
+
+// When connected, hide loading screen
+socket.on("connect", () => {
+  clearInterval(progressInterval)
+  clearInterval(statusInterval)
+  loadingProgressBar.style.width = "100%"
+  loadingStatus.textContent = "Connected!"
+  
+  setTimeout(() => {
+    loadingScreen.classList.add("hidden")
+    authView.classList.remove("hidden")
+  }, 400)
+})
+
+// Handle connection error
+socket.on("connect_error", () => {
+  loadingStatus.textContent = "Connection failed. Retrying..."
+  loadingProgressBar.style.background = "#dc2626"
+})
+
 // State
 let currentUser = null
 let currentRoom = null
