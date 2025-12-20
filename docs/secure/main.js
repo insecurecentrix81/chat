@@ -152,7 +152,7 @@ socket.on("login-result", (data) => {
       message += `<br><br><button class="suggestion-btn" onclick="switchToSignup()">Sign up instead?</button>`
     }
     if (data.passwordHint) {
-      message += `<br><br>💡 ${data.passwordHint}`
+      message += `<br><br>${data.passwordHint}`
     }
     showFeedback(loginFeedback, message, data.type || "error")
   }
@@ -179,12 +179,12 @@ forgotPasswordBtn.addEventListener("click", () => {
 
 rememberYes.addEventListener("click", () => {
   forgotPasswordGroup.classList.remove("hidden")
-  showFeedback(forgotFeedback, "Enter what you think it is to get a Wordle-style hint!", "info")
+  showFeedback(forgotFeedback, "Great! Remember your password and we'll help you remember it.", "info")
 })
 
 rememberNo.addEventListener("click", () => {
   forgotPasswordGroup.classList.remove("hidden")
-  showFeedback(forgotFeedback, "Enter a random guess to start getting hints.", "info")
+  showFeedback(forgotFeedback, "That's OK! Remember your password and we'll help you remember it.", "info")
 })
 
 recoverBtn.addEventListener("click", () => {
@@ -197,8 +197,7 @@ socket.on("recover-password-result", (data) => {
   if (data.success) {
     if (data.isHint) {
       // Show the Wordle Hint
-      let hintDisplay = `<strong>Analysis of your guess:</strong><br><br>` + data.hint
-      hintDisplay += `<br><br>Keep guessing to narrow it down!`
+      let hintDisplay = data.hint
       showFeedback(forgotFeedback, hintDisplay, "warning")
     } else {
       // Fallback for old behavior if needed
@@ -298,7 +297,7 @@ socket.on("join-room-result", (data) => {
   } else {
     let message = data.message
     if (data.passwordHint) {
-      message += `<br><br>💡 ${data.passwordHint}`
+      message += `<br><br>${data.passwordHint}`
     }
     showFeedback(roomFeedback, message, "error")
   }
@@ -369,7 +368,7 @@ socket.on("change-password-result", (data) => {
   } else {
     let message = data.message
     if (data.passwordHint) {
-      message += `<br><br>💡 ${data.passwordHint}`
+      message += `<br><br>${data.passwordHint}`
     }
     showFeedback(passwordFeedback, message, "error")
   }
