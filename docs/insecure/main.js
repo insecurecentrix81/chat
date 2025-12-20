@@ -18,6 +18,7 @@ const socket = io(BACKEND_URL, {
 let currentUser = null;
 let currentRoom = null;
 let sessionToken = null;
+let currentRoomPassword = null;
 
 // Connection status element
 const connectionStatus = document.getElementById("connection-status");
@@ -111,6 +112,80 @@ const exitRoomBtn = document.getElementById("exit-room-btn");
 const chatBox = document.getElementById("chat-box");
 const msgInput = document.getElementById("msg-input");
 const sendBtn = document.getElementById("send-btn");
+
+
+// Converts string <-> ArrayBuffer
+function strToBuf(str) {
+  return new TextEncoder().encode(str);
+}
+
+function bufToStr(buf) {
+  return new TextDecoder().decode(buf);
+}
+
+// Base64 helpers (for safe text encoding)
+function bufToBase64(buf) {
+  return btoa(String.fromCharCode(...new Uint8Array(buf)));
+}
+
+function base64ToBuf(b64) {
+  return Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+}
+
+// Derive a key from a password (PBKDF2 + SHA-256)
+async function deriveKey(password, salt) {
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw", strToBuf(password), { name: "PBKDF2" }, false, ["deriveKey"]
+  );
+
+  return crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      salt,
+      iterations: 1000000,
+      hash: "SHA-256",
+    },
+    keyMaterial,
+    { name: "AES-GCM", length: 256 },
+    false,
+    ["encrypt", "decrypt"]
+  );
+}
+
+// Encrypt a string with AES-GCM
+async function encryptAES(value, password) {
+  const salt = crypto.getRandomValues(new Uint8Array(16)); // for PBKDF2
+  const iv = crypto.getRandomValues(new Uint8Array(12));   // AES-GCM nonce
+  const key = await deriveKey(password, salt);
+
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv },
+    key,
+    strToBuf(value)
+  );
+
+  // Combine all and encode
+  const result = {
+    salt: bufToBase64(salt),
+    iv: bufToBase64(iv),
+    data: bufToBase64(ciphertext)
+  };
+  return btoa(JSON.stringify(result));
+}
+
+// Decrypt a string with AES-GCM
+async function decryptAES(encrypted, password) {
+  const { salt, iv, data } = JSON.parse(atob(encrypted));
+  const key = await deriveKey(password, base64ToBuf(salt));
+
+  const plaintextBuf = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: base64ToBuf(iv) },
+    key,
+    base64ToBuf(data)
+  );
+
+  return bufToStr(plaintextBuf);
+}
 
 // Helper Functions
 function showFeedback(element, message, type) {
@@ -341,6 +416,9 @@ joinRoomBtn.addEventListener("click", () => {
     return;
   }
   
+  // Store password for encryption (use room name if no password provided)
+  currentRoomPassword = password || room;
+  
   socket.emit("join-room", { room, password, sessionToken });
 });
 
@@ -363,10 +441,10 @@ socket.on("join-room-result", (data) => {
   }
 });
 
-// Exit Room
 exitRoomBtn.addEventListener("click", () => {
   socket.emit("leave-room", { room: currentRoom });
   currentRoom = null;
+  currentRoomPassword = null; // ← ADD THIS
   showView(homeView);
   joinRoomPanel.classList.add("hidden");
 });
@@ -500,22 +578,43 @@ function clearChat() {
   `;
 }
 
-function send() {
+// Replace your send function
+async function send() {
   if (msgInput.value.trim() === "") return;
+  
+  const originalMessage = msgInput.value.substring(0, 2000);
   
   const randomID = crypto.randomUUID ? crypto.randomUUID() : 
     Math.random().toString(36).substring(2) + Date.now().toString(36);
   
-  const data = {
-    message: msgInput.value.substring(0, 2000),
-    username: currentUser.username,
-    messageID: randomID,
-    room: currentRoom
-  };
-  
-  socket.emit("message", data);
-  renderMessage(data, true);
-  msgInput.value = "";
+  try {
+    // Encrypt the message
+    const encryptedMessage = await encryptAES(originalMessage, currentRoomPassword);
+    
+    const data = {
+      message: encryptedMessage,
+      username: currentUser.username,
+      messageID: randomID,
+      room: currentRoom,
+      encrypted: true // Flag so receivers know to decrypt
+    };
+    
+    socket.emit("message", data);
+    
+    // Render original message for self (we already know what we sent)
+    renderMessage({
+      message: originalMessage,
+      username: currentUser.username,
+      messageID: randomID,
+      room: currentRoom
+    }, true);
+    
+    msgInput.value = "";
+    
+  } catch (error) {
+    console.error("Encryption failed:", error);
+    showFeedback(roomFeedback, "Failed to encrypt message", "error");
+  }
 }
 
 function escapeHTML(str) {
@@ -539,9 +638,13 @@ function renderMessage(data, isSelf) {
   msgDiv.className = `message ${isSelf ? "unloaded" : ""} ${isCurrentUser ? "user-msg" : "other-msg"}`;
   msgDiv.id = `msg-${data.messageID}`;
   
+  // Add encryption indicator
+  const lockIcon = data.decryptionFailed ? "🔓❌" : "🔒";
+  
   msgDiv.innerHTML = `
     <div class="message-header">
       <span class="message-author">${escapeHTML(data.username)}</span>
+      <span class="encryption-badge" title="End-to-end encrypted">${lockIcon}</span>
     </div>
     <div class="message-text">${escapeHTML(data.message)}</div>
   `;
@@ -556,8 +659,27 @@ msgInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey) send();
 });
 
-socket.on("message", (data) => {
+socket.on("message", async (data) => {
   if (data.room === currentRoom) {
+    // Skip our own messages (already rendered)
+    if (data.username === currentUser?.username) {
+      // Just mark as loaded if we sent it
+      const msgEl = document.getElementById("msg-" + data.messageID);
+      if (msgEl) msgEl.classList.remove("unloaded");
+      return;
+    }
+    
+    // Decrypt if encrypted
+    if (data.encrypted && currentRoomPassword) {
+      try {
+        data.message = await decryptAES(data.message, currentRoomPassword);
+      } catch (error) {
+        console.error("Decryption failed:", error);
+        data.message = "🔒 [Cannot decrypt - wrong room password?]";
+        data.decryptionFailed = true;
+      }
+    }
+    
     renderMessage(data, false);
   }
 });
