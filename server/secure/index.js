@@ -1,14 +1,19 @@
 // In-memory "database" - very secure, data disappears on restart!
 let users = [
-  { username: "admin", password: "admin123" },
-  { username: "guest", password: "password" },
+  { username: "admin", password: "admin_password1235678!!!" },
+  { username: "guest", password: "guestAccountPassword" },
   { username: "user1", password: "123456" },
-  { username: "demo", password: "demo" }
+  { username: "demo", password: "demo" },
+  { user: "securecentrix81", password: "securecentrix81_password123!"},
+  { user: "sgobinath578", password: "08222011"},
+  { user: "asdf", password: "asdf123" },
+  { user: "1234", password: "1234asd" }
 ]
 
 let rooms = {
   "general": { password: "", creator: "system" },
-  "secret": { password: "secret", creator: "admin" }
+  "secret": { password: "secret", creator: "admin" },
+  "asdf": { password: "password123!", creator: "asdf" }
 }
 
 // Helper: Get password hint (very helpful for hackers!)
