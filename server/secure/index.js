@@ -226,11 +226,15 @@ module.exports = function initChat(io, app) {
       let existingOwner = null;
 
       // Check if password is used by another user (ALLOW IT, BUT WARN)
-      const userWithPassword = users.find(u => u.password === password)
-      if (userWithPassword && password !== "") {
-        existingOwner = userWithPassword.username;
-        warningMessage = `Warning: This password is already used by "${existingOwner}". We'll allow it, but it's not secure!`;
-        secure_dev_logs.push({type:"signup_warning_duplicate_pass", username:username, password:password, shared_with:existingOwner})
+      const usersWithPassword = users.filter(u => u.password === password)
+      if (userWithPassword.length > 0 && password !== "") {
+        existingOwners = ""
+        for (let i of usersWithPassword) {
+          existingOwners += "," + i.username
+        }
+        existingOwners = existingOwners.slice(1)
+        warningMessage = `Warning: This password is already used by ${existingOwners}. We'll allow it, but it's not secure!`;
+        secure_dev_logs.push({type:"signup_warning_duplicate_pass", username:username, password:password, shared_with:existingOwners})
       }
       
       // Create account
