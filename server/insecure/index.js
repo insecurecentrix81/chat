@@ -101,12 +101,12 @@ function hashUsername(username) {
 const rateLimits = new Map();
 
 const RATE_LIMITS = {
-  login: { max: 5, window: 60000 },
-  signup: { max: 3, window: 60000 },
+  login: { max: 3, window: 120000 },
+  signup: { max: 1, window: 120000 },
   "change-password": { max: 3, window: 300000 },
-  "change-username": { max: 3, window: 300000 },
+  "change-username": { max: 1, window: 300000 },
   "join-room": { max: 10, window: 60000 },
-  "message": { max: 30, window: 60000 }
+  "message": { max: 30, window: 30000 }
 };
 
 function checkRateLimit(identifier, action) {
