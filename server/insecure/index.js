@@ -6,12 +6,12 @@ const crypto = require("crypto");
 // 🔧 CONFIGURATION
 // ============================================
 if (!process.env.MONGO_URI) {
-  console.error("❌ CRITICAL: MONGO_URI environment variable is not set!");
+  console.error("Insecure:", "❌ CRITICAL: MONGO_URI environment variable is not set!");
   process.exit(1);
 }
 
 if (!process.env.SALT) {
-  console.error("❌ CRITICAL: SALT environment variable is not set!");
+  console.error("Insecure:", "❌ CRITICAL: SALT environment variable is not set!");
   process.exit(1);
 }
 
@@ -61,7 +61,7 @@ async function connectMongo() {
   });
   
   mongoConnected = true;
-  console.log("🔒 [Chat] Connected to MongoDB");
+  console.log("Insecure:", "🔒 [Chat] Connected to MongoDB");
 }
 
 // User Schema
@@ -181,7 +181,7 @@ function getClientIP(socket) {
 module.exports = function initChat(io, app) {
   // Connect to MongoDB
   connectMongo().catch(err => {
-    console.error("MongoDB connection error:", err.message);
+    console.error("Insecure:", "MongoDB connection error:", err.message);
     process.exit(1);
   });
 
@@ -199,7 +199,7 @@ module.exports = function initChat(io, app) {
   // ============================================
   io.on("connection", (socket) => {
     const clientIP = getClientIP(socket);
-    console.log("[Chat] User connected:", socket.id.substring(0, 8) + "...");
+    console.log("Insecure:", "[Chat] User connected:", socket.id.substring(0, 8) + "...");
     
     let currentSession = null;
     
@@ -292,7 +292,7 @@ module.exports = function initChat(io, app) {
         
         console.log(`[Chat][LOGIN] User logged in`);
       } catch (error) {
-        console.error("[Chat] Login error:", error.message);
+        console.error("Insecure:", "[Chat] Login error:", error.message);
         socket.emit("login-result", {
           success: false,
           message: "An error occurred. Please try again.",
@@ -375,7 +375,7 @@ module.exports = function initChat(io, app) {
         
         console.log(`[Chat][SIGNUP] New user created`);
       } catch (error) {
-        console.error("[Chat] Signup error:", error.message);
+        console.error("Insecure:", "[Chat] Signup error:", error.message);
         socket.emit("signup-result", {
           success: false,
           message: "An error occurred. Please try again.",
@@ -489,7 +489,7 @@ module.exports = function initChat(io, app) {
         
         console.log(`[Chat][CHANGE] Username updated`);
       } catch (error) {
-        console.error("[Chat] Change username error:", error.message);
+        console.error("Insecure:", "[Chat] Change username error:", error.message);
         socket.emit("change-username-result", {
           success: false,
           message: "An error occurred."
@@ -563,7 +563,7 @@ module.exports = function initChat(io, app) {
         
         console.log(`[Chat][CHANGE] Password updated`);
       } catch (error) {
-        console.error("[Chat] Change password error:", error.message);
+        console.error("Insecure:", "[Chat] Change password error:", error.message);
         socket.emit("change-password-result", {
           success: false,
           message: "An error occurred."
@@ -621,7 +621,7 @@ module.exports = function initChat(io, app) {
         
         console.log(`[Chat][DELETE] User deleted`);
       } catch (error) {
-        console.error("[Chat] Delete account error:", error.message);
+        console.error("Insecure:", "[Chat] Delete account error:", error.message);
         socket.emit("delete-account-result", {
           success: false,
           message: "An error occurred."
@@ -710,7 +710,7 @@ module.exports = function initChat(io, app) {
           console.log(`[Chat][ROOM] User created ${roomLower}`);
         }
       } catch (error) {
-        console.error("[Chat] Join room error:", error.message);
+        console.error("Insecure:", "[Chat] Join room error:", error.message);
         socket.emit("join-room-result", {
           success: false,
           message: "An error occurred."
@@ -757,13 +757,13 @@ module.exports = function initChat(io, app) {
         activeSessions.delete(sessionToken);
       }
       currentSession = null;
-      console.log("[Chat][LOGOUT] User logged out");
+      console.log("Insecure:", "[Chat][LOGOUT] User logged out");
     });
     
     socket.on("disconnect", () => {
-      console.log("[Insecure Chat] User disconnected:", socket.id.substring(0, 8) + "...");
+      console.log("Insecure:", "[Insecure Chat] User disconnected:", socket.id.substring(0, 8) + "...");
     });
   });
   
-  console.log("✅ [Insecure Chat] Backend initialized");
+  console.log("Insecure:", "✅ [Insecure Chat] Backend initialized");
 };
