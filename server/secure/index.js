@@ -2,8 +2,6 @@ const firstNames = require('./commonfirstnames.json');
 const lastNames = require('./commonlastnames.json');
 const commonPasswords = require('./commonpasswords.json');
 
-
-
 // In-memory "database"
 let users = [
   { username: "admin", password: "admin_password1235678!!!" },
@@ -12,17 +10,20 @@ let users = [
   { username: "demo", password: "demo" },
 ]
 
-let passIdx = 0;
+const usedUsernames = new Set(["admin", "guest", "user1", "demo"]); // Pre-fill with hardcoded names
 
-// Nested loops create unique combinations (e.g., james_smith, james_jones, mary_smith...)
-for (let i = 0; i < firstNames.length && passIdx < commonPasswords.length; i++) {
-  for (let j = 0; j < lastNames.length && passIdx < commonPasswords.length; j++) {
-    users.push({
-      username: `${firstNames[i].toLowerCase()}_${lastNames[j].toLowerCase()}`,
-      password: commonPasswords[passIdx]
-    });
-    passIdx++;
+let tries = 0
+while (users.length < 100000 && tries < 1000000) {
+  const rFirst = firstNames[Math.floor(Math.random() * firstNames.length)].toLowerCase();
+  const rLast = lastNames[Math.floor(Math.random() * lastNames.length)].toLowerCase();
+  const rPass = commonPasswords[Math.floor(Math.random() * commonPasswords.length)];
+  const uName = `${rFirst}_${rLast}`;
+
+  if (!usedUsernames.has(uName)) {
+    usedUsernames.add(uName);
+    users.push({ username: uName, password: rPass });
   }
+  ++tries
 }
 
 let rooms = {
