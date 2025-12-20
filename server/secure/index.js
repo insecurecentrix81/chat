@@ -63,7 +63,7 @@ function getPasswordHint(actual, attempt) {
   let correctFeedback = []
   for (let i = 0; i < attemptChars.length; ++i) {
     if (i < actualChars.length && attemptChars[i] === actualChars[i]) {
-      correctFeedback.push(`🟩 "${attemptChars[i]}" is correct at pos ${i + 1}`)
+      correctFeedback.push(`"${attemptChars[i]}" is in the word and in the correct spot.`)
       matched[i] = true
       processed[i] = true
     }
@@ -76,7 +76,7 @@ function getPasswordHint(actual, attempt) {
     
     for (let j = 0; j < actualChars.length; j++) {
       if (!matched[j] && attemptChars[i] === actualChars[j]) {
-        yellowFeedback.push(`🟨 "${attemptChars[i]}" exists (wrong pos)`)
+        yellowFeedback.push(`"${attemptChars[i]}" is in the word but in the wrong spot(position ${i + 1})`)
         matched[j] = true
         processed[i] = true
         break
@@ -88,7 +88,7 @@ function getPasswordHint(actual, attempt) {
   // Third pass: Mark incorrect letters (GRAY in Wordle)
   for (let i = 0; i < attemptChars.length; ++i) {
     if (!processed[i]) {
-      incorrectFeedback.push(`⬜ "${attemptChars[i]}" is not in password`)
+      incorrectFeedback.push(`"${attemptChars[i]}" is not in the word in any spot(position ${i + 1})`)
     }
   }
   
@@ -102,8 +102,7 @@ function getPasswordHint(actual, attempt) {
 
   // Combine for a nice output
   let combined = [...incorrectFeedback, ...yellowFeedback, ...correctFeedback]
-  // Limit to 5 hints to avoid flooding UI, prioritize Green > Yellow > Gray
-  return lengthHint + " " + combined.slice(0, 5).join(", ")
+  return lengthHint + " " + combined.join(", ")
 }
 
 module.exports = function initChat(io, app) {  
