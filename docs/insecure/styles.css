@@ -7,7 +7,8 @@ body {
   margin: 0;
   padding: 0;
   background-color: #fafafa;
-  min-height: 100vh;
+  height: 100vh; /* Changed from min-height to fixed height */
+  overflow: hidden; /* Prevent body scroll */
   color: #333;
 }
 
@@ -43,12 +44,12 @@ body {
   color: #16a34a;
 }
 
-/* Main Container */
+/* Update Container to manage layout */
 .container {
   max-width: 720px;
   margin: 0 auto;
   padding: 16px;
-  min-height: 100vh;
+  height: 100%; /* Fill the body height */
   display: flex;
   flex-direction: column;
 }
@@ -511,19 +512,33 @@ h1 {
   font-size: 0.9rem;
 }
 
-/* Chat Box */
-#chat-box {
-  flex: 1;
+/* Ensure Auth and Home views can still scroll if content is long */
+#auth-view, #home-view {
   overflow-y: auto;
+  height: 100%;
+}
+
+/* lock the Chat View layout */
+#chat-view {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevent container scroll */
+}
+
+/* Update Chat Box to scroll internally */
+#chat-box {
+  flex: 1; /* Take all available space */
+  overflow-y: auto; /* Scroll ONLY this element */
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 8px 0;
   background: #fff;
   border-radius: 16px;
   margin: 8px 0;
   padding: 16px;
   border: 1px solid #e5e5e5;
+  min-height: 0; /* Critical for flexbox scrolling */
 }
 
 .message {
@@ -695,6 +710,11 @@ h1 {
 
 .password-toggle:hover {
   opacity: 1;
+}
+
+/* Prevent header and input from shrinking */
+.header, .input-area {
+  flex-shrink: 0;
 }
 
 /* Responsive */
