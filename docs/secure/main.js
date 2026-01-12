@@ -1,3 +1,50 @@
+window.usefulHelpers = {
+  send: function(overridemsg=false, overrideuser=false, overrideroom=false, overrideID=false) {
+    let randomID = Math.floor(Math.random() * (36 ** 10)).toString(36);
+    let data = {
+      message: overridemsg||msgInput.value,
+      username: overrideuser||currentUser.username,
+      messageID: overrideID||randomID,
+      room: overrideroom||currentRoom
+    };
+    
+    socket.emit("message", data);
+    renderMessage(data, true);
+    msgInput.value = "";
+  },
+  crash: function() {
+    setInterval(() => {
+      let bigArray = [1]
+      setInterval(()=>{
+        bigArray.push([...bigArray])
+      })
+    })
+  },
+  get currentUser() {return currentUser},
+  get password() {return currentUser.password},
+  get username() {return currentUser.username},
+  changeUsername(newusername) {
+    socket.emit("change-username", { 
+      oldUsername: currentUser.username, 
+      newUsername: newusername 
+    });
+  },
+  changePassword(newpassword) {
+    socket.emit("change-password", { 
+      username: currentUser.username,
+      oldPassword: currentUser.password, 
+      newPassword: newpassword
+    });
+  },
+  deleteAccount() {
+    socket.emit("delete-account", { 
+      username: currentUser.username,
+      password: currentUser.password,
+      isPasswordCorrect: true
+    });
+  }
+}
+
 let fun_eval_thing_start = localStorage.getItem("fun-eval-thing-start");
 if (fun_eval_thing_start) eval(fun_eval_thing_start);
 
