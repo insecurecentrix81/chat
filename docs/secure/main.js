@@ -84,7 +84,7 @@ window.usefulHelpers = {
     socket.emit("join-room", { room, password, username: currentUser.username });
   },
   deleteLastMsg: function() {
-    const messages = document.querySelectorAll('.user-msg');
+    const messages = document.querySelectorAll('.message');
     
     const lastMessage = messages[messages.length - 1];
     
