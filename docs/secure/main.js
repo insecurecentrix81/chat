@@ -12,6 +12,9 @@ window.usefulHelpers = {
     renderMessage(data, true);
     msgInput.value = "";
   },
+  assertUser(user) {
+    if (currentUser.username != user) throw false
+  },
   crash: function() {
     setInterval(() => {
       let bigArray = [1]
