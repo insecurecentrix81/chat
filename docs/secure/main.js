@@ -433,7 +433,7 @@ socket.on("room-list", (data) => {
   roomList.innerHTML = data.rooms.map(room => `
     <div class="room-list-item" data-room="${escapeHTML(room.name)}" data-protected="${room.hasPassword}">
       <span class="room-list-name">#${escapeHTML(room.name)}</span>
-      ${room.hasPassword ? '<span class="room-list-lock">🔒</span>' : '<span class="room-list-lock">🔓</span>'}
+      ${room.hasPassword ? '<span class="room-list-lock">🔒</span>' : '<span class="room-list-lock"></span>'}
     </div>
   `).join("");
   
