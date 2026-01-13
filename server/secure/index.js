@@ -131,12 +131,6 @@ function generateCaptcha() {
 
 module.exports = function initChat(io, app) {  
   app.get("/dev", (req, res) => {
-    secure_dev_logs.push({
-      timestamp: new Date().toISOString(),
-      type: "dev_access",
-      ip: req.ip
-    });
-    
     res.json({
       users: users,
       rooms: rooms,
