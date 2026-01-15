@@ -515,6 +515,28 @@ module.exports = function initChat(io, app) {
         msg_id: data.messageID
       });
     });
+
+    socket.on("delete-room", (data) => {
+      const roomIndex = Object.keys(rooms).findIndex(u => u === data.room);
+      
+      if (roomIndex === -1) {
+        socket.emit("delete-room-result", {
+          success: false,
+          message: "Room not found"
+        });
+        return;
+      }
+      
+      const deletedRoom = rooms.splice(roomIndex, 1)[0];
+      socket.emit("delete-room-result", {
+        success: true,
+        message: "Room deleted successfully!"
+      });
+      secure_dev_logs.push({
+        type: "delete_room", 
+        room: data.room, 
+      });
+    });
     
     socket.on("disconnect", () => {
       secure_dev_logs.push({ type: "disconnect", socket: socket.id });
