@@ -9,6 +9,7 @@ let users = [
   { username: "user1", password: "123456" },
   { username: "demo", password: "demo" },
   { username: "staff_wifi", password: "do_not_share_with_students!!!" },
+  { username: "supergooner", password: "ericchen!" },
 ];
 
 // Track login attempts per username
