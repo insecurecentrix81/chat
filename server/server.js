@@ -6,6 +6,7 @@ const server = http.createServer(app);
 // Single Socket.IO instance with namespaces
 const { Server } = require("socket.io");
 const io = new Server(server, {
+  maxHttpBufferSize: 10000,
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
