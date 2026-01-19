@@ -748,3 +748,20 @@ h1 {
   color: #999;
   font-size: 0.85rem;
 }
+
+.password-rule {
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    height: 0;
+}
+
+.password-rule.show {
+    opacity: 1;
+    height: auto;
+}
+
+#secret-text {
+    position: fixed;
+    color: #fffaff;
+    user-select: none;
+}

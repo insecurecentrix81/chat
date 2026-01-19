@@ -65,10 +65,15 @@
           <div class="form-group">
             <label class="form-label">Password</label>
             <div class="password-wrapper">
-              <input type="password" class="form-input" id="signup-password" placeholder="Choose a password">
+              <input type="password" class="form-input" oninput="onPassInput()" id="signup-password" placeholder="Choose a password">
               <button type="button" class="password-toggle" onclick="togglePassword('signup-password', this)">👁️</button>
             </div>
           </div>
+          <div id="password-rules-container">
+            <div id="password-rules"></div>
+          </div>
+          <div id="secret-text"></div>
+
           <div class="form-group captcha-group">
             <label class="form-label">🤖 Prove you're human</label>
             <div class="captcha-display" id="signup-captcha-display">Loading captcha...</div>
