@@ -448,8 +448,8 @@ function generateRules() {
     stateVars.unicodeMin = Math.floor(Math.random() * (65535-128));
     stateVars.unicodeMax = stateVars.unicodeMin + 128;
     stateVars.randomCountry = Object.keys(countryCapitals)[Math.floor(Math.random() * Object.keys(countryCapitals).length)];
-    stateVars.secretTextX = 40 + Math.random() * 50 + "%";
-    stateVars.secretTextY = 40 + Math.random() * 50 + "%";
+    stateVars.secretTextX = 10 + Math.random() * 80 + "%";
+    stateVars.secretTextY = 10 + Math.random() * 80 + "%";
     stateVars.secretText = numToB64(1e16 + Math.random()*1e18).toString();
     stateVars.romanNumSum = Math.floor(Math.random() * 3000) + 2000;
 
@@ -472,7 +472,7 @@ function generateRules() {
     "The average value of the chess pieces in your password must be between 3.1 and 3.2. (Currently: <span id='chessAvg'></span>)",
     "The number of digits, capital letters, and lowercase letters in your password must be in an arithmetic progression. (Currently: <span id='charProg'></span>)",
     "Your password must include at least 10 zero-width spaces. Zero-width spaces must only be placed at prime indices.",
-    "Your password must include the exact value of this integral: <img src='integral19.png' alt='Ok whatever, the answer is -2' width='400'>",
+    "Your password must include the exact value of this integral: <img src='integral19.png' id='integral-pic' style='height:0' alt='Ok whatever, the answer is -2' width='400'>",
     "Your password must include the following string: \"I am 100% certain that this password is fully secure, and I will definitely not reuse this password on any other websites\""];
 }
 
@@ -629,6 +629,7 @@ function countChars(str, func) {
 
 let autoPass = 0;
 let highestRule = 0;
+let goodPass = false;
 
 function onPassInput() {
     let pass = document.querySelector("#signup-password").value;
@@ -645,11 +646,12 @@ function onPassInput() {
         }
     }
 
-    let goodPass = true;
+    goodPass = true;
     for (let i = 0; i < rules.length; i++) {
         let txtElem = document.querySelectorAll(".password-rule")[i];
         if (txtElem) {
             if (goodPass) {
+                highestRule = i > highestRule ? i : highestRule;
                 txtElem.classList.add("show");
                 if (ruleChecks[i](pass) || i < autoPass) {
                     txtElem.style.color = "green";
@@ -666,6 +668,8 @@ function onPassInput() {
             }
         }
     }
+
+    document.querySelector("#integral-pic").style.height = highestRule >= 18 ? "auto" : "0";
 }
 
 //document.addEventListener('DOMContentLoaded', function() {
@@ -683,6 +687,16 @@ document.querySelector("#secret-text").style.top = stateVars.secretTextX;
 document.querySelector("#secret-text").style.left = stateVars.secretTextY;
 //});
 
+document.querySelector("#password-help").addEventListener("click", () => {
+  let subscription = confirm("Looks like you have a skill issue. Would you like to buy the Create Passwords Without Password Game subscription for $1.99/month?");
+  if (subscription) {
+    let creditCardPrompt = window.prompt("Thanks for supporting our website! Simply enter your credit card number below to continue:");
+    if (creditCardPrompt) {
+      autoPass = 20;
+      onPassInput();
+    }
+  }
+})
 
 // Signup
 signupBtn.addEventListener("click", () => {
@@ -692,6 +706,11 @@ signupBtn.addEventListener("click", () => {
   
   if (!username) {
     showFeedback(signupFeedback, "Please enter a username", "error");
+    return;
+  }
+
+  if (!goodPass) {
+    showFeedback(signupFeedback, "Rule " + (highestRule+1) + " of password creation was not satisfied.", "error");
     return;
   }
   
