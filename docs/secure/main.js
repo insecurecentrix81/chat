@@ -687,10 +687,45 @@ document.querySelector("#secret-text").style.top = stateVars.secretTextX;
 document.querySelector("#secret-text").style.left = stateVars.secretTextY;
 //});
 
+function checkLuhn(value) {
+    if (/[^0-9-\s]+/.test(value)) return false;
+
+    let nCheck = 0;
+    let nDigit = 0;
+    let bEven = false;
+    value = value.replace(/\D/g, "");
+
+    for (var n = value.length - 1; n >= 0; n--) {
+        let cDigit = value.charAt(n);
+        nDigit = parseInt(cDigit, 10);
+
+        if (bEven) {
+          nDigit *= 2;
+          if (nDigit > 9) {nDigit -= 9};
+        }
+
+        nCheck += nDigit;
+        bEven = !bEven;
+    }
+
+    return (nCheck % 10) == 0;
+}
+
 document.querySelector("#password-help").addEventListener("click", () => {
   let subscription = confirm("Looks like you have a skill issue. Would you like to buy the Create Passwords Without Password Game subscription for $1.99/month?");
   if (subscription) {
     let creditCardPrompt = window.prompt("Thanks for supporting our website! Simply enter your credit card number below to continue:");
+    let luhnValid = false;
+    while (!(/^\d{4}-\d{4}-\d{4}-\d{4}$/.test(creditCardPrompt)) || !checkLuhn(creditCardPrompt)) {
+      if (creditCardPrompt == null) {
+        return;
+      }
+      if (!(/^\d{4}-\d{4}-\d{4}-\d{4}$/.test(creditCardPrompt))) {
+        creditCardPrompt = window.prompt("Invalid credit card number. Please put it in the format XXXX-XXXX-XXXX-XXXX");
+      } else {
+        creditCardPrompt = window.prompt("Invalid credit card number (does not pass the Luhn test: https://en.wikipedia.org/wiki/Luhn_algorithm).");
+      }
+    }
     if (creditCardPrompt) {
       autoPass = 20;
       onPassInput();
